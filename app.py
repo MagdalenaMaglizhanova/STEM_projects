@@ -1,23 +1,32 @@
 import streamlit as st
 from PIL import Image
+import numpy as np
+import cv2
 import requests
-from pyzbar.pyzbar import decode
 
-st.title("Barcode Scanner with Open Food Facts")
+st.title("Barcode Scanner с OpenCV и Open Food Facts")
 
 uploaded_file = st.file_uploader("Качи снимка с баркод", type=["png", "jpg", "jpeg"])
 
 if uploaded_file:
-    image = Image.open(uploaded_file)
+    image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption="Качена снимка", use_column_width=True)
 
-    # Разчитане на баркода
-    decoded_objects = decode(image)
-    if decoded_objects:
-        barcode = decoded_objects[0].data.decode("utf-8")
+    # Конвертираме PIL image в numpy array за OpenCV
+    img = np.array(image)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+    # Инициализираме OpenCV barcode detector
+    detector = cv2.barcode_BarcodeDetector()
+
+    # Опитваме да открием и декодираме баркод
+    ok, decoded_info, decoded_type, points = detector.detectAndDecode(img)
+
+    if ok and decoded_info:
+        barcode = decoded_info[0]
         st.success(f"Разпознат баркод: {barcode}")
 
-        # Търсене в Open Food Facts
+        # Търсим продукта в Open Food Facts
         url = f"https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
         response = requests.get(url)
         if response.status_code == 200:
