@@ -1,47 +1,56 @@
 import streamlit as st
-from PIL import Image
+import plotly.graph_objects as go
 import numpy as np
-import cv2
-import requests
 
-st.title("Barcode Scanner с OpenCV и Open Food Facts")
+st.set_page_config(page_title="STEM Соларен Панел", layout="centered")
 
-uploaded_file = st.file_uploader("Качи снимка с баркод", type=["png", "jpg", "jpeg"])
+st.title("🔆 Влияние на ъгъла върху ефективността на соларен панел")
 
-if uploaded_file:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Качена снимка", use_column_width=True)
+# 1. Теоретична част
+with st.expander("📘 Научи повече"):
+    st.markdown("""
+    Слънчевите панели преобразуват светлината в електрическа енергия.
+    Един от ключовите фактори, който влияе на ефективността им, е **ъгълът под който слънчевите лъчи попадат върху панела**.
+    
+    Колкото по-перпендикулярно светлината пада върху панела, толкова по-голямо количество енергия се абсорбира.
+    """)
 
-    # Конвертираме PIL image в numpy array за OpenCV
-    img = np.array(image)
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+# 2. Симулация с 3D визуализация
+st.subheader("🧪 Изпробвай как ъгълът влияе на енергийния добив")
 
-    # Инициализираме OpenCV barcode detector
-    detector = cv2.barcode_BarcodeDetector()
+angle = st.slider("Избери ъгъл на слънчевите лъчи спрямо панела (в градуси)", 0, 90, 45)
 
-    # Опитваме да открием и декодираме баркод
-    ok, decoded_info, decoded_type, points = detector.detectAndDecode(img)
+# Симулиран добив (максимален при 0 градуса)
+energy_output = np.cos(np.radians(angle)) * 100  # % от максимума
 
-    if ok and decoded_info:
-        barcode = decoded_info[0]
-        st.success(f"Разпознат баркод: {barcode}")
+fig = go.Figure(data=[go.Surface(
+    z=[[energy_output]*5]*5, 
+    colorscale='YlOrRd',
+    showscale=False
+)])
+fig.update_layout(
+    title=f"Енергиен добив: {energy_output:.1f}%",
+    scene=dict(
+        zaxis_title='Добив (%)',
+        xaxis_visible=False,
+        yaxis_visible=False,
+        zaxis=dict(range=[0, 100])
+    ),
+    margin=dict(l=20, r=20, t=30, b=20)
+)
 
-        # Търсим продукта в Open Food Facts
-        url = f"https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
-        response = requests.get(url)
-        if response.status_code == 200:
-            product_data = response.json()
-            if product_data.get("status") == 1:
-                product = product_data["product"]
-                st.subheader(product.get("product_name", "Име не е налично"))
-                st.write(f"Бранд: {product.get('brands', 'Няма информация')}")
-                st.write(f"Съставки: {product.get('ingredients_text', 'Няма информация')}")
-                st.write(f"Енергийна стойност: {product.get('nutriments', {}).get('energy-kcal_100g', 'Няма информация')} kcal/100g")
-                if 'image_url' in product:
-                    st.image(product['image_url'], caption="Продуктова снимка")
-            else:
-                st.error("Продуктът не е намерен в Open Food Facts.")
-        else:
-            st.error("Грешка при връзката с Open Food Facts API.")
-    else:
-        st.error("Не можа да се разчете баркод от снимката.")
+st.plotly_chart(fig, use_container_width=True)
+
+# 3. Хипотеза
+st.subheader("🧠 Формулирай хипотеза")
+hypothesis = st.text_area("Какво ще стане, ако променим ъгъла или положението на панела?", "")
+
+# 4. Проектна идея
+st.subheader("🛠️ Твоята идея")
+idea = st.text_area("Измисли проект, в който използваш соларна енергия – например зарядно устройство, лампа и т.н.", "")
+
+if st.button("📤 Изпрати"):
+    st.success("Браво! Успешно формулира хипотеза и идея за проект!")
+
+---
+
