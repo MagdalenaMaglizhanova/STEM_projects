@@ -2,7 +2,7 @@ import streamlit as st
 
 st.title("🌬️ STEM урок: Вятърни мелници")
 
-# 1. Урок
+# Урок
 st.header("Как работи вятърната мелница?")
 st.markdown("""
 Вятърните мелници използват силата на вятъра, за да въртят лопатките си. Това въртене се преобразува в енергия, която може да се използва за различни неща — например за производство на електричество или за смилане на зърно.
@@ -16,32 +16,34 @@ st.markdown("""
 
 st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Wind_turbine_blades_rotating_in_sunlight_%28cropped%29.jpg/320px-Wind_turbine_blades_rotating_in_sunlight_%28cropped%29.jpg", caption="Вятърна мелница")
 
-# 2. Визуализация с контрол на вятъра (Three.js)
+#  Слайдер за сила на вятъра
+wind_speed = st.slider("Избери сила на вятъра", min_value=0.0, max_value=10.0, value=1.0, step=0.1)
 
-threejs_html = """
+# 3D визуализация с получена стойност на wind_speed от Streamlit
+threejs_html = f"""
 <!DOCTYPE html>
 <html lang="bg">
 <head>
   <meta charset="UTF-8" />
   <title>STEM: Вятърна Турбина</title>
   <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
-    #info {
+    body {{ margin: 0; overflow: hidden; }}
+    canvas {{ display: block; }}
+    #info {{
       position: absolute;
       top: 10px; left: 10px;
       color: white;
       background: rgba(0,0,0,0.5);
       padding: 10px;
       font-family: sans-serif;
-    }
+      z-index: 10;
+    }}
   </style>
 </head>
 <body>
-<div id="info">💨 Вятър: <span id="windSpeed">1</span> | ⚡ Енергия: <span id="energy">0</span> kWh</div>
+<div id="info">💨 Вятър: <span id="windSpeed">{wind_speed:.1f}</span> | ⚡ Енергия: <span id="energy">0</span> kWh</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/lil-gui@0.18.0/dist/lil-gui.min.js"></script>
 
 <script>
   const scene = new THREE.Scene();
@@ -81,42 +83,40 @@ threejs_html = """
   scene.add(hub);
 
   const blades = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i++) {{
     const blade = new THREE.Mesh(
       new THREE.BoxGeometry(0.05, 1, 0.1),
-      new THREE.MeshStandardMaterial({ color: 0xff0000 })
+      new THREE.MeshStandardMaterial({{ color: 0xff0000 }})
     );
     blade.position.y = 3;
     blade.geometry.translate(0, 0.5, 0);
     scene.add(blade);
     blades.push(blade);
-  }
+  }}
 
-  let windSpeed = 1;
-  const gui = new lil.GUI();
-  gui.add({ wind: 1 }, 'wind', 0, 10, 0.1).name('Сила на вятъра').onChange(v => windSpeed = v);
+  const windSpeed = {wind_speed};
 
   let angle = 0;
-  function animate() {
+  function animate() {{
     requestAnimationFrame(animate);
     angle += windSpeed * 0.01;
-    blades.forEach((blade, i) => {
+    blades.forEach((blade, i) => {{
       const rot = angle + (i * Math.PI * 2 / 3);
       blade.position.x = Math.sin(rot) * 0.3;
       blade.position.z = Math.cos(rot) * 0.3;
       blade.rotation.y = rot;
-    });
+    }});
     document.getElementById('windSpeed').textContent = windSpeed.toFixed(1);
     document.getElementById('energy').textContent = (windSpeed * 5).toFixed(0);
     renderer.render(scene, camera);
-  }
+  }}
   animate();
 
-  window.addEventListener('resize', () => {
+  window.addEventListener('resize', () => {{
     camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-  });
+  }});
 </script>
 </body>
 </html>
@@ -125,7 +125,7 @@ threejs_html = """
 st.header("Тествай мелницата")
 st.components.v1.html(threejs_html, height=600, scrolling=False)
 
-# 3. Хипотеза
+# Хипотеза
 st.header("Направи хипотеза")
 
 hypothesis = st.text_area("Как смяташ, че ще се промени въртенето и енергията при увеличаване на силата на вятъра?", height=150)
