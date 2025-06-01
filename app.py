@@ -1,8 +1,7 @@
 import streamlit as st
 
-st.title("STEM Проект: Вятърна Мелница с 3D визуализация")
+st.title("STEM Проект: Холандска Вятърна Мелница с 3D визуализация")
 
-# Слайдер за скорост на вятъра
 wind_speed_input = st.slider(
     "Изберете скорост на вятъра (m/s)",
     min_value=0.0,
@@ -11,24 +10,25 @@ wind_speed_input = st.slider(
     step=0.1
 )
 
-# HTML с Three.js визуализацията и използване на избраната скорост
 threejs_html = f"""
 <!DOCTYPE html>
 <html lang="bg">
 <head>
   <meta charset="UTF-8" />
-  <title>STEM: Вятърна Турбина</title>
+  <title>STEM: Холандска Вятърна Мелница</title>
   <style>
-    body {{ margin: 0; overflow: hidden; }}
+    body {{ margin: 0; overflow: hidden; background-color: #a0c4ff; }}
     canvas {{ display: block; }}
     #info {{
       position: absolute;
       top: 10px; left: 10px;
-      color: white;
-      background: rgba(0,0,0,0.5);
+      color: #222;
+      background: rgba(255,255,255,0.8);
       padding: 10px;
-      font-family: sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       z-index: 10;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }}
   </style>
 </head>
@@ -39,7 +39,6 @@ threejs_html = f"""
 
 <script>
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xaec6cf);
 
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
   camera.position.set(0, 3, 7);
@@ -53,6 +52,7 @@ threejs_html = f"""
   scene.add(light);
   scene.add(new THREE.AmbientLight(0x404040));
 
+  // Земя
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(20, 20),
     new THREE.MeshStandardMaterial({{ color: 0x228B22 }})
@@ -60,43 +60,47 @@ threejs_html = f"""
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
 
+  // Стълб
   const pole = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.1, 0.2, 3),
+    new THREE.CylinderGeometry(0.2, 0.3, 4),
     new THREE.MeshStandardMaterial({{ color: 0xffffff }})
   );
-  pole.position.y = 1.5;
+  pole.position.y = 2;
   scene.add(pole);
 
-  const hub = new THREE.Mesh(
-    new THREE.SphereGeometry(0.2),
-    new THREE.MeshStandardMaterial({{ color: 0x999999 }})
+  // Главата на мелницата (кубична, за класически вид)
+  const head = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshStandardMaterial({{ color: 0x8b4513 }})
   );
-  hub.position.y = 3;
-  scene.add(hub);
+  head.position.y = 4;
+  scene.add(head);
 
+  // Перки - 4 големи плоски правоъгълника
   const blades = [];
-  for (let i = 0; i < 3; i++) {{
+  const bladeLength = 3.0;
+  const bladeWidth = 0.4;
+
+  for (let i = 0; i < 4; i++) {{
     const blade = new THREE.Mesh(
-      new THREE.BoxGeometry(0.05, 1, 0.1),
-      new THREE.MeshStandardMaterial({{ color: 0xff0000 }})
+      new THREE.BoxGeometry(bladeLength, 0.15, bladeWidth),
+      new THREE.MeshStandardMaterial({{ color: 0x8b4513 }})
     );
-    blade.position.y = 3;
-    blade.geometry.translate(0, 0.5, 0);
+    blade.position.y = 4;
+    blade.geometry.translate(bladeLength / 2, 0, 0);
+    blade.rotation.z = i * (Math.PI / 2);
     scene.add(blade);
     blades.push(blade);
   }}
 
+  let angle = 0;
   const windSpeed = {wind_speed_input};
 
-  let angle = 0;
   function animate() {{
     requestAnimationFrame(animate);
     angle += windSpeed * 0.01;
-    blades.forEach((blade, i) => {{
-      const rot = angle + (i * Math.PI * 2 / 3);
-      blade.position.x = Math.sin(rot) * 0.3;
-      blade.position.z = Math.cos(rot) * 0.3;
-      blade.rotation.y = rot;
+    blades.forEach((blade) => {{
+      blade.rotation.y = angle;
     }});
     document.getElementById('windSpeed').textContent = windSpeed.toFixed(1);
     document.getElementById('energy').textContent = (windSpeed * 5).toFixed(0);
@@ -114,5 +118,4 @@ threejs_html = f"""
 </html>
 """
 
-# Показваме HTML в Streamlit
-st.components.v1.html(threejs_html, height=500)
+st.components.v1.html(threejs_html, height=600)
