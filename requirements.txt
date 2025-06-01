@@ -1,5 +1,6 @@
 streamlit
 opencv-python-headless
-Pillow>=10.1.0
-numpy>=1.26.0
+numpy
+easyocr
 requests
+Pillow
