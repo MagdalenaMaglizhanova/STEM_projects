@@ -1,25 +1,8 @@
 import streamlit as st
 
-st.title("🌬️ STEM урок: Вятърни мелници")
+# Примерна скорост на вятъра (можеш да я промениш динамично)
+wind_speed = 5.0
 
-# Урок
-st.header("Как работи вятърната мелница?")
-st.markdown("""
-Вятърните мелници използват силата на вятъра, за да въртят лопатките си. Това въртене се преобразува в енергия, която може да се използва за различни неща — например за производство на електричество или за смилане на зърно.
-
-- Вятърът създава сила, която завърта лопатките.
-- Скоростта на вятъра влияе на скоростта на въртене и колко енергия се произвежда.
-- Лопатките са проектирани така, че да използват максимално вятърната енергия.
-
-> **Задача:** Разбери как силата на вятъра влияе на въртенето и енергията.
-""")
-
-st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Wind_turbine_blades_rotating_in_sunlight_%28cropped%29.jpg/320px-Wind_turbine_blades_rotating_in_sunlight_%28cropped%29.jpg", caption="Вятърна мелница")
-
-#  Слайдер за сила на вятъра
-wind_speed = st.slider("Избери сила на вятъра", min_value=0.0, max_value=10.0, value=1.0, step=0.1)
-
-# 3D визуализация с получена стойност на wind_speed от Streamlit
 threejs_html = f"""
 <!DOCTYPE html>
 <html lang="bg">
@@ -52,7 +35,7 @@ threejs_html = f"""
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
   camera.position.set(0, 3, 7);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  const renderer = new THREE.WebGLRenderer({{ antialias: true }});
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
@@ -63,21 +46,21 @@ threejs_html = f"""
 
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(20, 20),
-    new THREE.MeshStandardMaterial({ color: 0x228B22 })
+    new THREE.MeshStandardMaterial({{ color: 0x228B22 }})
   );
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
 
   const pole = new THREE.Mesh(
     new THREE.CylinderGeometry(0.1, 0.2, 3),
-    new THREE.MeshStandardMaterial({ color: 0xffffff })
+    new THREE.MeshStandardMaterial({{ color: 0xffffff }})
   );
   pole.position.y = 1.5;
   scene.add(pole);
 
   const hub = new THREE.Mesh(
     new THREE.SphereGeometry(0.2),
-    new THREE.MeshStandardMaterial({ color: 0x999999 })
+    new THREE.MeshStandardMaterial({{ color: 0x999999 }})
   );
   hub.position.y = 3;
   scene.add(hub);
@@ -122,18 +105,29 @@ threejs_html = f"""
 </html>
 """
 
-st.header("Тествай мелницата")
-st.components.v1.html(threejs_html, height=600, scrolling=False)
+st.title("STEM Проект: Вятърна Мелница с 3D визуализация")
 
-# Хипотеза
-st.header("Направи хипотеза")
+st.markdown("""
+Този урок ви запознава с принципа на работа на вятърната мелница и как скоростта на вятъра влияе върху произведената енергия.
 
-hypothesis = st.text_area("Как смяташ, че ще се промени въртенето и енергията при увеличаване на силата на вятъра?", height=150)
+- Скорост на вятъра: колкото по-висока, толкова по-бързо се въртят лопатките.
+- Енергия: приблизително пропорционална на скоростта.
+
+Опитайте да промените скоростта на вятъра по-долу и наблюдавайте промяната в анимацията и произведената енергия.
+""")
+
+wind_speed_input = st.slider("Изберете скорост на вятъра (m/s)", min_value=0.0, max_value=20.0, value=wind_speed, step=0.1)
+
+# Обновяваме HTML с новата скорост
+updated_html = threejs_html.format(wind_speed=wind_speed_input)
+
+# Вкарваме HTML през iframe
+st.components.v1.html(updated_html, height=500)
+
+st.subheader("Тествайте своята хипотеза")
+
+hypothesis = st.text_area("Напишете своята хипотеза: Как скоростта на вятъра влияе на произведената енергия?")
 
 if st.button("Изпрати хипотезата"):
-    if hypothesis.strip() == "":
-        st.warning("Моля, напиши хипотеза преди да изпратиш.")
-    else:
-        st.success("Благодарим! Твоята хипотеза е записана.")
-        st.write("Твоята хипотеза:")
-        st.write(hypothesis)
+    st.success(f"Вашата хипотеза е записана: {hypothesis}")
+
