@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("STEM Проект: Холандска Вятърна Мелница с 3D визуализация")
+st.title("STEM Проект: Вятърна Турбина с 3D визуализация (Извити перки)")
 
 wind_speed_input = st.slider(
     "Изберете скорост на вятъра (m/s)",
@@ -15,7 +15,7 @@ threejs_html = f"""
 <html lang="bg">
 <head>
   <meta charset="UTF-8" />
-  <title>STEM: Холандска Вятърна Мелница</title>
+  <title>STEM: Вятърна Турбина с Извити Перкита</title>
   <style>
     body {{ margin: 0; overflow: hidden; background-color: #a0c4ff; }}
     canvas {{ display: block; }}
@@ -23,7 +23,7 @@ threejs_html = f"""
       position: absolute;
       top: 10px; left: 10px;
       color: #222;
-      background: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.85);
       padding: 10px;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       z-index: 10;
@@ -68,27 +68,36 @@ threejs_html = f"""
   pole.position.y = 2;
   scene.add(pole);
 
-  // Главата на мелницата (кубична, за класически вид)
+  // Главата на турбината
   const head = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshStandardMaterial({{ color: 0x8b4513 }})
+    new THREE.MeshStandardMaterial({{ color: 0x555555 }})
   );
   head.position.y = 4;
   scene.add(head);
 
-  // Перки - 4 големи плоски правоъгълника
+  // Перките (3 извити)
   const blades = [];
-  const bladeLength = 3.0;
-  const bladeWidth = 0.4;
 
-  for (let i = 0; i < 4; i++) {{
+  const bladeShape = new THREE.Shape();
+  bladeShape.moveTo(0, 0);
+  bladeShape.bezierCurveTo(0.2, 0.5, 0.3, 2.5, 0, 3.5);
+
+  const extrudeSettings = {{
+    steps: 2,
+    depth: 0.1,
+    bevelEnabled: false,
+  }};
+
+  for (let i = 0; i < 3; i++) {{
+    const geometry = new THREE.ExtrudeGeometry(bladeShape, extrudeSettings);
     const blade = new THREE.Mesh(
-      new THREE.BoxGeometry(bladeLength, 0.15, bladeWidth),
-      new THREE.MeshStandardMaterial({{ color: 0x8b4513 }})
+      geometry,
+      new THREE.MeshStandardMaterial({{ color: 0x555555, metalness: 0.7, roughness: 0.3 }})
     );
+    blade.rotation.z = (i * (2 * Math.PI)) / 3;
     blade.position.y = 4;
-    blade.geometry.translate(bladeLength / 2, 0, 0);
-    blade.rotation.z = i * (Math.PI / 2);
+    blade.geometry.translate(0, -1.75, 0);
     scene.add(blade);
     blades.push(blade);
   }}
