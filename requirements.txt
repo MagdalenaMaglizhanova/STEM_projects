@@ -1,4 +1,3 @@
 streamlit
-pillow
-requests
-opencv-python
+plotly
+numpy
